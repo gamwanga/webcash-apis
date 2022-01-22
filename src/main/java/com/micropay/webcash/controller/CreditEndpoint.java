@@ -6,6 +6,7 @@ import com.micropay.webcash.entity.Customer;
 import com.micropay.webcash.model.TxnResult;
 import com.micropay.webcash.services.CreditService;
 import com.micropay.webcash.services.CustomerService;
+import com.micropay.webcash.services.LoanManagerService;
 import com.micropay.webcash.utils.CommonResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -26,6 +27,8 @@ import static com.micropay.webcash.utils.Logger.logInfo;
 public class CreditEndpoint {
     @Autowired
     private CreditService customerService;
+    @Autowired
+    private LoanManagerService loanManagerService;
 
     @PostMapping("/findAllCreditApplications")
     @ApiOperation(value = "", authorizations = {@Authorization(value = "apiKey")})
@@ -52,4 +55,18 @@ public class CreditEndpoint {
             return CommonResponse.getUndefinedError();
         }
     }
+
+    @PostMapping("/approveLoan")
+    @ApiOperation(value = "", authorizations = {@Authorization(value = "apiKey")})
+    @Operation(summary = "Approves Credit Application")
+    public TxnResult approveLoan(@RequestBody CreditApp request) {
+        try {
+            logInfo(request);
+            return loanManagerService.approveLoan(request);
+        }catch (Exception e){
+            logError(e);
+            return CommonResponse.getUndefinedError();
+        }
+    }
+
 }

@@ -29,6 +29,18 @@ public class AuthenticationEndpoint {
     @Autowired
     private CustomerService customerService;
 
+    @PostMapping("/authenticateWebUser")
+    @ApiOperation(value = "", authorizations = {@Authorization(value = "apiKey")})
+    @Operation(summary = "Manages user authentication in the system")
+    public TxnResult authenticateWebUser(@RequestBody AuthRequest request) {
+        try {
+            return service.authentication(request);
+        } catch (Exception e) {
+            logError(e);
+            return CommonResponse.getUndefinedError();
+        }
+    }
+
     @PostMapping("/loginUser")
     @ApiOperation(value = "", authorizations = {@Authorization(value = "apiKey")})
     @Operation(summary = "Manages user authentication in the system")

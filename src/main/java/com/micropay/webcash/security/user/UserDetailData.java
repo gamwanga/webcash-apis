@@ -1,6 +1,6 @@
 package com.micropay.webcash.security.user;
 
-import com.micropay.webcash.entity.User;
+import com.micropay.webcash.entity.SysUser;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,9 +11,9 @@ import java.util.List;
 
 public class UserDetailData implements UserDetails {
 
-    private final User employee;
+    private final SysUser employee;
 
-    public UserDetailData(User employee) {
+    public UserDetailData(SysUser employee) {
         this.employee = employee;
     }
 

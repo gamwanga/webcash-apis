@@ -43,8 +43,6 @@ public class CreditApp {
     @Column(name = "cust_id", nullable = false)
     private Integer custId;
 
-
-
     @Column(name = "created_by", nullable = false, length = 10)
     private String createdBy;
 

@@ -2,7 +2,7 @@ package com.micropay.webcash.services;
 
 import com.micropay.webcash.config.SchemaConfig;
 import com.micropay.webcash.entity.Password;
-import com.micropay.webcash.entity.User;
+import com.micropay.webcash.entity.SysUser;
 import com.micropay.webcash.model.AuthRequest;
 import com.micropay.webcash.model.AuthResponse;
 import com.micropay.webcash.model.PasswordChangeRequest;
@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.List;
 
 @Service
 public class AuthenticationService {
@@ -35,14 +34,14 @@ public class AuthenticationService {
 
     @Transactional
     public TxnResult logoutUser(AuthRequest request) {
-        List<User> data = repo.findUserByLoginId(request.getUsername());
-        if (data.isEmpty()) {
+        SysUser data = repo.findUserByLoginId(request.getUsername());
+        if (data != null) {
             return TxnResult.builder().message("Unauthorized").
                     code("403").build();
         }
 
         request.setStatus("success");
-        request.setEmployeeId(data.get(0).getId());
+        request.setEmployeeId(data.getId());
         pwdRepo.logOutUser(request);
         return TxnResult.builder().message("approved").
                 code("00").build();
@@ -51,17 +50,16 @@ public class AuthenticationService {
 
     @Transactional
     public TxnResult authentication(AuthRequest request) throws Exception {
-
-        List<User> data = repo.findUserByLoginId(request.getUsername());
-        if (data.isEmpty()) {
+        SysUser data = repo.findUserByLoginId(request.getUsername());
+        if (data == null) {
             return TxnResult.builder().message("Unauthorized").
                     code("403").build();
         }
 
-        Password password = pwdRepo.findActivePasswordByEmployeeId(data.get(0).getId());
+        Password password = pwdRepo.findActivePasswordByEmployeeId(data.getId());
         if (password.getEncryptedPswd() == null) {
             request.setStatus("failed");
-            request.setEmployeeId(data.get(0).getId());
+            request.setEmployeeId(data.getId());
             pwdRepo.logAccessTrail(request);
             return TxnResult.builder().message("Unauthorized").
                     code("403").build();
@@ -72,56 +70,53 @@ public class AuthenticationService {
             return TxnResult.builder().message("Unauthorized").
                     code("403").build();
         AuthResponse response = new AuthResponse();
-        response.setEmployeeId(data.get(0).getId());
-        response.setGender(data.get(0).getGender());
-        response.setAllowMultipleSessions(data.get(0).getAllowMultipleSessions());
-        response.setStartDate(data.get(0).getStartDate());
-        response.setEndDate(data.get(0).getEndDate());
-        response.setFailedLoginAttempts(data.get(0).getFailedLoginAttempts());
-        response.setBranchId(data.get(0).getBranchId());
-        response.setLoginId(data.get(0).getLoginId());
-        response.setEmployeeNumber(data.get(0).getEmployeeNumber());
-        response.setCustomerNo(data.get(0).getCustomerNo());
-        response.setFirstName(data.get(0).getFirstName());
-        response.setMiddleName(data.get(0).getMiddleName());
-        response.setLastName(data.get(0).getLastName());
-        response.setEmailAddress(data.get(0).getEmailAddress());
-        response.setSecurityRoleId(data.get(0).getSecurityRoleId());
-        response.setStatus(data.get(0).getStatus());
-
+        response.setEmployeeId(data.getId());
+        response.setGender(data.getGender());
+        response.setStartDate(data.getStartDate());
+        response.setEndDate(data.getEndDate());
+        response.setFailedLoginAttempt(data.getFailedLoginAttempt());
+        response.setBranchId(data.getBranchId());
+        response.setUserName(data.getUserName());
+        response.setEmployeeNumber(data.getEmployeeNumber());
+        response.setFirstName(data.getFirstName());
+        response.setMiddleName(data.getMiddleName());
+        response.setLastName(data.getLastName());
+        response.setEmailAddress(data.getEmailAddress());
+        response.setSecurityRoleId(data.getSecurityRoleId());
+        response.setStatus(data.getStatus());
         response.setProcessDate(DateUtils.toString(DateUtils.getCurrentDate()));
-        response.setSecurityRoleDesc(data.get(0).getFirstName());
-        response.setBranchDesc(data.get(0).getFirstName());
-        response.setEmployeeName(data.get(0).getFirstName());
-        response.setPasswordChangedFlag(data.get(0).getPasswordChangedFlag());
-        response.setPasswordExpiryFlag(data.get(0).getFirstName());
-        response.setPasswordChanged(data.get(0).getFirstName());
-        response.setToken(data.get(0).getFirstName());
+        response.setSecurityRoleDesc(data.getFirstName());
+        response.setBranchDesc(data.getFirstName());
+        response.setEmployeeName(data.getFirstName());
+        response.setPasswordChangeFlag(data.getPasswordChangeFlag());
+        response.setPasswordExpiryFlag(data.getFirstName());
+        response.setPasswordChanged(data.getFirstName());
+        response.setToken(data.getFirstName());
         response.setLicenseDays(0);
-        response.setFailedLogins(data.get(0).getFirstName());
-        response.setMinimumPasswordLength(data.get(0).getFirstName());
-        response.setAllowBranchChange(data.get(0).getAllowBranchChange());
-        response.setLastLogonDate(data.get(0).getLastLogonDate());
+        response.setFailedLogins(data.getFirstName());
+        response.setMinimumPasswordLength(data.getFirstName());
+        response.setLastLogonDate(data.getLastLogonDate());
         response.setUserCurrencyId(0);
-        repo.updateLoginActivities(new Timestamp(new Date().getTime()), data.get(0).getId());
+        repo.updateLoginActivities(new Timestamp(new Date().getTime()), data.getId());
 
         request.setStatus("success");
-        request.setEmployeeId(data.get(0).getId());
+        request.setEmployeeId(data.getId());
         String sessionToken = pwdRepo.logAccessTrail(request);
         response.setToken(sessionToken);
         return TxnResult.builder().message("approved").
                 code("00").data(response).build();
     }
 
+
     @Transactional
     public TxnResult changePassword(PasswordChangeRequest request) throws Exception {
 
-        List<User> employee = repo.findUserByLoginId(request.getUserName());
-        if (employee.isEmpty())
+        SysUser employee = repo.findUserByLoginId(request.getUserName());
+        if (employee == null)
             return TxnResult.builder().message("Invalid username specified").
                     code("403").build();
 
-        Password password = pwdRepo.findActivePasswordByEmployeeId(employee.get(0).getId());
+        Password password = pwdRepo.findActivePasswordByEmployeeId(employee.getId());
         if (password == null || password.getEncryptedPswd() == null)
             return TxnResult.builder().message("Unauthorized").
                     code("403").build();
@@ -144,23 +139,23 @@ public class AuthenticationService {
                 return TxnResult.builder().message("You cannot reuse a password you have used recently.").
                         code("-99").build();
             else {
-                pwdRepo.deactivateCurrentPassword(employee.get(0).getId());
-                pwdRepo.reactivateOlPassword(employee.get(0).getId(), newPassword);
+                pwdRepo.deactivateCurrentPassword(employee.getId());
+                pwdRepo.reactivateOlPassword(employee.getId(), newPassword);
                 return TxnResult.builder().message("approved").
                         code("00").build();
             }
         }
 
-        pwdRepo.deactivateCurrentPassword(employee.get(0).getId());
+        pwdRepo.deactivateCurrentPassword(employee.getId());
         Password password1 = new Password();
         password1.setCreateDate(new Timestamp(new Date().getTime()));
-        password1.setEmployeeId(employee.get(0).getId());
+        password1.setEmployeeId(employee.getId());
         password1.setCreatedBy(request.getUserName());
         password1.setPasswordCycle(1);
         password1.setStatus("A");
         password1.setEncryptedPswd(newPassword);
         pwdRepo.createPassword(password1);
-        repo.updatePasswordChangeFlag(employee.get(0).getId());
+        repo.updatePasswordChangeFlag(employee.getId());
         return TxnResult.builder().message("approved").
                 code("00").build();
     }

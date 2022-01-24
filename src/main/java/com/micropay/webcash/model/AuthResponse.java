@@ -1,14 +1,14 @@
 package com.micropay.webcash.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.micropay.webcash.entity.User;
+import com.micropay.webcash.entity.SysUser;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class AuthResponse extends User {
+public class AuthResponse extends SysUser {
     private String processDate;
     private Integer employeeId;
     private String securityRoleDesc;

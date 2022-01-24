@@ -1,6 +1,6 @@
 package com.micropay.webcash.repositories.security;
 
-import com.micropay.webcash.entity.User;
+import com.micropay.webcash.entity.SysUser;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -11,27 +11,27 @@ import java.sql.Timestamp;
 import java.util.List;
 
 @Repository
-public interface UserRepo extends CrudRepository<User, Integer> {
+public interface UserRepo extends CrudRepository<SysUser, Integer> {
 
-    @Query(value = "select u.* from user_ref u order by first_name", nativeQuery = true)
-    List<User> findUsers();
+    @Query(value = "select u.* from sys_user u order by first_name", nativeQuery = true)
+    List<SysUser> findUsers();
 
-    @Query(value = "select u.* from user_ref u where u.login_id = :login_id order by first_name", nativeQuery = true)
-    List<User> findUserByLoginId(
-            @Param("login_id") String loginId
+    @Query(value = "select u.* from sys_user u where u.user_name = :user_name order by first_name", nativeQuery = true)
+    SysUser findUserByLoginId(
+            @Param("user_name") String loginId
     );
 
     @Modifying
-    @Query(value = "update user_ref set last_logon_date = :last_logon_date where user_id = :user_id", nativeQuery = true)
+    @Query(value = "update sys_user set last_logon_date = :last_logon_date where sys_userid = :sys_userid", nativeQuery = true)
     void updateLoginActivities(
             @Param("last_logon_date") Timestamp timestamp,
-            @Param("user_id") Integer userId
+            @Param("sys_userid") Integer userId
     );
 
     @Modifying
-    @Query(value = "update user_ref set password_changed_flag = 'Y' where user_id = :user_id", nativeQuery = true)
+    @Query(value = "update sys_user set password_changed_flag = 'Y' where sys_userid = :sys_userid", nativeQuery = true)
     void updatePasswordChangeFlag(
-            @Param("user_id") Integer userId
+            @Param("sys_userid") Integer userId
     );
 
  }

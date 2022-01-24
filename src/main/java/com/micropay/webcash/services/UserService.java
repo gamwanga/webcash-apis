@@ -1,28 +1,23 @@
 package com.micropay.webcash.services;
 
 import com.micropay.webcash.entity.CreditApp;
-import com.micropay.webcash.entity.Customer;
+import com.micropay.webcash.entity.SysUser;
 import com.micropay.webcash.model.TxnResult;
 import com.micropay.webcash.repositories.CreditAppRepo;
-import com.micropay.webcash.repositories.CustomerRepo;
+import com.micropay.webcash.repositories.SysUserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
-public class CreditService {
+public class UserService {
 
     @Autowired
-    private CreditAppRepo creditAppRepo;
+    private SysUserRepo sysUserRepo;
 
-    public TxnResult findAll(CreditApp request) {
-        List<CreditApp> charges;
-        if (request.getCustId() != null)
-            charges = creditAppRepo.findAll(request.getCustId());
-        else
-            charges = creditAppRepo.findAll();
+    public TxnResult findAll(SysUser request) {
+        List<SysUser> charges = sysUserRepo.findUsers();
         if (charges == null || charges.isEmpty())
             return TxnResult.builder().code("404")
                     .message("No records found")
@@ -32,14 +27,14 @@ public class CreditService {
     }
 
 
-    public TxnResult save(CreditApp request) {
-        creditAppRepo.save(request);
+    public TxnResult save(SysUser request) {
+        sysUserRepo.save(request);
         return TxnResult.builder().message("approved").
                 code("00").data(request).build();
     }
 
-    public TxnResult update(CreditApp request) {
-        creditAppRepo.save(request);
+    public TxnResult update(SysUser request) {
+        sysUserRepo.save(request);
         return TxnResult.builder().message("approved").
                 code("00").data(request).build();
     }

@@ -1,8 +1,6 @@
 package com.micropay.webcash.repositories;
 
 import com.micropay.webcash.entity.Customer;
-import com.micropay.webcash.entity.User;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;

@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface CustomerRepo extends CrudRepository<Customer, Integer> {
-    @Query(value = "select * from mbl_customer u", nativeQuery = true)
+    @Query(value = "select * from mbl_customer u order by u.cust_id desc", nativeQuery = true)
     List<Customer> findAll();
 
     @Query(value = "select * from mbl_customer u where u.cust_id = :cust_id", nativeQuery = true)

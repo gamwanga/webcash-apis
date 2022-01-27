@@ -1,6 +1,7 @@
 package com.micropay.webcash.controller;
 
 
+import com.micropay.webcash.entity.CreditApp;
 import com.micropay.webcash.entity.Customer;
 import com.micropay.webcash.model.TxnResult;
 import com.micropay.webcash.services.CustomerService;
@@ -32,6 +33,19 @@ public class CustomerEndpoint {
         try {
             logInfo(request);
             return customerService.findCustById(request);
+        }catch (Exception e){
+            logError(e);
+            return CommonResponse.getUndefinedError();
+        }
+    }
+
+    @PostMapping("/findAllCustomers")
+    @ApiOperation(value = "", authorizations = {@Authorization(value = "apiKey")})
+    @Operation(summary = "Retrieves all customer addresses in the system")
+    public TxnResult findAllCustomers(@RequestBody Customer request) {
+        try {
+            logInfo(request);
+            return customerService.findAll(request);
         }catch (Exception e){
             logError(e);
             return CommonResponse.getUndefinedError();

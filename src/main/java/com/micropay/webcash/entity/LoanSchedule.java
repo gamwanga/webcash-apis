@@ -1,5 +1,6 @@
 package com.micropay.webcash.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -65,9 +66,11 @@ public class LoanSchedule {
     private Double interestUnpaid;
 
     @Column(name = "due_date", nullable = false)
+    @JsonFormat(pattern="yyyy-MM-dd")
     private Date dueDate;
 
     @Column(name = "payment_date")
+    @JsonFormat(pattern="yyyy-MM-dd")
     private Date paymentDate;
 
     @Column(name = "status", nullable = false, length = 15)
@@ -87,6 +90,13 @@ public class LoanSchedule {
 
     @Column(name = "row_version", nullable = false)
     private Integer rowVersion;
+
+    @Transient
+    private Double totalAmount;
+    @Transient
+    private Double amountUnPaid;
+    @Transient
+    private Double amountPaid;
 
 
 }

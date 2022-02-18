@@ -5,9 +5,11 @@ import com.micropay.webcash.entity.LoanAccount;
 import com.micropay.webcash.entity.LoanRepaymentInfo;
 import com.micropay.webcash.entity.LoanSchedule;
 import com.micropay.webcash.model.TxnResult;
+import com.micropay.webcash.repositories.CreditAppRepo;
 import com.micropay.webcash.repositories.LoanScheduleRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.text.DateFormat;
@@ -26,6 +28,8 @@ public class LoanManagerService {
     private LoanScheduleService loanScheduleService;
     @Autowired
     private LoanScheduleRepo loanScheduleRepo;
+    @Autowired
+    private CreditAppRepo creditAppRepo;
 
     Double totalInterest = 0D;
     Double totalPrincipal = 0D;
@@ -59,8 +63,6 @@ public class LoanManagerService {
             dblInterest = dblInterest;
             dblPrinciple = dblPrinciple;
             dblTempPrinciple = (dblTempPrinciple - dblPrinciple);
-            // ceze
-            payDueDate = loanAccount.getStartDate();
             dblTotalAmount = dblPrinciple + dblInterest;
 
             loanSchedulesList.add(new LoanSchedule(
@@ -83,15 +85,15 @@ public class LoanManagerService {
             Calendar cal = Calendar.getInstance();
             cal.setTime(payDueDate);
             switch (strInterval) {
-                case "Day":
+                case "DAY":
                     cal.add(Calendar.DATE, 1);
                     payDueDate = cal.getTime();
                     break;
-                case "Week":
+                case "WEEK":
                     cal.add(Calendar.DATE, 7);
                     payDueDate = cal.getTime();
                     break;
-                case "Month":
+                case "MONTH":
                     cal.add(Calendar.MONTH, 1);
                     payDueDate = cal.getTime();
                     break;
@@ -118,6 +120,7 @@ public class LoanManagerService {
         }
         return loanSchedulesList;
     }
+
     private List<LoanSchedule> computeReducingBalanceSchedule(CreditApp request, LoanAccount loanAccount, LoanRepaymentInfo loanRepaymentInfo) {
         List<LoanSchedule> loanSchedulesList = new ArrayList<>();
         int intCount;
@@ -144,13 +147,13 @@ public class LoanManagerService {
             dblInterestRate = (loanRepaymentInfo.getInterestRate() / 100);
             dblTempPrinciple = dblTotal;
             switch (strInterval) {
-                case "Day":
+                case "DAY":
                     intpnPeriods = 365;
                     break;
-                case "Week":
+                case "WEEK":
                     intpnPeriods = 52;
                     break;
-                case "Month":
+                case "MONTH":
                     intpnPeriods = 12;
                     break;
                 case "Quarter":
@@ -200,15 +203,15 @@ public class LoanManagerService {
                 Calendar cal = Calendar.getInstance();
                 cal.setTime(payDueDate);
                 switch (strInterval) {
-                    case "Day":
+                    case "DAY":
                         cal.add(Calendar.DATE, 1);
                         payDueDate = cal.getTime();
                         break;
-                    case "Week":
+                    case "WEEK":
                         cal.add(Calendar.DATE, 7);
                         payDueDate = cal.getTime();
                         break;
-                    case "Month":
+                    case "MONTH":
                         cal.add(Calendar.MONTH, 1);
                         payDueDate = cal.getTime();
                         break;
@@ -252,15 +255,15 @@ public class LoanManagerService {
                 Calendar cal = Calendar.getInstance();
                 cal.setTime(payDueDate);
                 switch (strInterval) {
-                    case "Day":
+                    case "DAY":
                         cal.add(Calendar.DATE, 1);
                         payDueDate = cal.getTime();
                         break;
-                    case "Week":
+                    case "WEEK":
                         cal.add(Calendar.DATE, 7);
                         payDueDate = cal.getTime();
                         break;
-                    case "Month":
+                    case "MONTH":
                         cal.add(Calendar.MONTH, 1);
                         payDueDate = cal.getTime();
                         break;
@@ -293,11 +296,17 @@ public class LoanManagerService {
 
     @Transactional
     public TxnResult approveLoan(CreditApp request) {
+        creditAppRepo.save(request);
+        if (!request.getStatus().equals("ACTIVE"))
+            return TxnResult.builder().message("approved").
+                    code("00").data(request).build();
+
         DateFormat dateFormat = new SimpleDateFormat("yymmddhhmmss");
         String loanNumber = dateFormat.format(Calendar.getInstance().getTime());
         LoanAccount loanAccount = new LoanAccount();
         loanAccount.setCreditApplId(request.getId());
         loanAccount.setApprovedAmount(request.getApplAmt());
+        loanAccount.setLedgerBal(request.getApplAmt());
         loanAccount.setStartDate(request.getStartDate());
         loanAccount.setEndDate(request.getEndDate());
         loanAccount.setLoanNumber(loanNumber);
@@ -334,4 +343,8 @@ public class LoanManagerService {
         return TxnResult.builder().message("approved").
                 code("00").data(request).build();
     }
+
+
+
+
 }

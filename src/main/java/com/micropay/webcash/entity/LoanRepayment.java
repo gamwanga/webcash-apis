@@ -23,7 +23,7 @@ public class LoanRepayment {
     private String referenceNo;
 
     @Column(name = "amount", nullable = false, precision = 12, scale = 6)
-    private BigDecimal amount;
+    private Double amount;
 
     @Column(name = "trans_date", nullable = false)
     private Timestamp transDate;

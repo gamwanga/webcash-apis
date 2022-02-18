@@ -1,5 +1,6 @@
 package com.micropay.webcash.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -26,12 +27,14 @@ public class LoanAccount {
     private Integer creditApplId;
 
     @Column(name = "approved_amount", nullable = false, precision = 15)
-    private BigDecimal approvedAmount;
+    private Double approvedAmount;
 
     @Column(name = "start_date", nullable = false)
+    @JsonFormat(pattern="yyyy-MM-dd")
     private Date startDate;
 
     @Column(name = "end_date", nullable = false)
+    @JsonFormat(pattern="yyyy-MM-dd")
     private Date endDate;
 
     @Column(name = "repay_interest", precision = 15)
@@ -46,6 +49,16 @@ public class LoanAccount {
     @Column(name = "repay_period", nullable = false, length = 15)
     private String repayPeriod;
 
+    @Column(name = "next_pmt_amount", precision = 15)
+    private Double nextPmtAmount;
+
+    @Column(name = "ledger_bal", nullable = false, precision = 15)
+    private Double ledgerBal;
+
+    @Column(name = "next_pmt_date")
+    @JsonFormat(pattern="yyyy-MM-dd")
+    private Date nextPmtDate;
+
     @Column(name = "status", nullable = false, length = 15)
     private String status;
 
@@ -53,18 +66,26 @@ public class LoanAccount {
     private String createdBy;
 
     @Column(name = "create_date", nullable = false)
+    @JsonFormat(pattern="yyyy-MM-dd")
     private Date createDate;
 
     @Column(name = "modified_by", length = 30)
     private String modifiedBy;
 
     @Column(name = "modified_date")
+    @JsonFormat(pattern="yyyy-MM-dd")
     private Date modifiedDate;
 
     @Column(name = "row_version", nullable = false)
     private Integer rowVersion;
 
     @Transient
+    private String creditNumber;
+
+    @Transient
     private Integer custId;
+
+    @Transient
+    private String custName;
 
 }

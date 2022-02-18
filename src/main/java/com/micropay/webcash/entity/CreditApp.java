@@ -61,6 +61,6 @@ public class CreditApp {
     private Integer rowVersion;
 
     @Column(name = "appl_amt", nullable = false, precision = 6)
-    private BigDecimal applAmt;
+    private Double applAmt;
 
 }

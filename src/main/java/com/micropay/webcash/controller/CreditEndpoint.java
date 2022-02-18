@@ -3,10 +3,10 @@ package com.micropay.webcash.controller;
 
 import com.micropay.webcash.entity.CreditApp;
 import com.micropay.webcash.entity.Customer;
+import com.micropay.webcash.entity.LoanAccount;
+import com.micropay.webcash.entity.LoanSchedule;
 import com.micropay.webcash.model.TxnResult;
-import com.micropay.webcash.services.CreditService;
-import com.micropay.webcash.services.CustomerService;
-import com.micropay.webcash.services.LoanManagerService;
+import com.micropay.webcash.services.*;
 import com.micropay.webcash.utils.CommonResponse;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -29,6 +29,10 @@ public class CreditEndpoint {
     private CreditService customerService;
     @Autowired
     private LoanManagerService loanManagerService;
+    @Autowired
+    private LoanAccountService loanAccountService;
+    @Autowired
+    private LoanScheduleService loanScheduleService;
 
     @PostMapping("/findAllCreditApplications")
     @ApiOperation(value = "", authorizations = {@Authorization(value = "apiKey")})
@@ -42,6 +46,7 @@ public class CreditEndpoint {
             return CommonResponse.getUndefinedError();
         }
     }
+
 
     @PostMapping("/creditApplication")
     @ApiOperation(value = "", authorizations = {@Authorization(value = "apiKey")})
@@ -63,6 +68,45 @@ public class CreditEndpoint {
         try {
             logInfo(request);
             return loanManagerService.approveLoan(request);
+        }catch (Exception e){
+            logError(e);
+            return CommonResponse.getUndefinedError();
+        }
+    }
+
+    @PostMapping("/disburseLoan")
+    @ApiOperation(value = "", authorizations = {@Authorization(value = "apiKey")})
+    @Operation(summary = "Approves Credit Application")
+    public TxnResult disburseLoan(@RequestBody LoanAccount request) {
+        try {
+            logInfo(request);
+            return loanAccountService.disburseLoan(request);
+        }catch (Exception e){
+            logError(e);
+            return CommonResponse.getUndefinedError();
+        }
+    }
+
+    @PostMapping("/findLoanAccount")
+    @ApiOperation(value = "", authorizations = {@Authorization(value = "apiKey")})
+    @Operation(summary = "Retrieves all customer addresses in the system")
+    public TxnResult findLoanAccount(@RequestBody LoanAccount request) {
+        try {
+            logInfo(request);
+            return loanAccountService.findAll(request);
+        }catch (Exception e){
+            logError(e);
+            return CommonResponse.getUndefinedError();
+        }
+    }
+
+    @PostMapping("/findLoanSchedule")
+    @ApiOperation(value = "", authorizations = {@Authorization(value = "apiKey")})
+    @Operation(summary = "Retrieves all customer addresses in the system")
+    public TxnResult findLoanSchedule(@RequestBody LoanSchedule request) {
+        try {
+            logInfo(request);
+            return loanScheduleService.findAll(request);
         }catch (Exception e){
             logError(e);
             return CommonResponse.getUndefinedError();

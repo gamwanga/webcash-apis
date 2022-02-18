@@ -9,6 +9,7 @@ import com.micropay.webcash.repositories.LoanScheduleRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -18,13 +19,20 @@ public class LoanScheduleService {
     private LoanScheduleRepo loanScheduleRepo;
 
     public TxnResult findAll(LoanSchedule request) {
-        List<LoanSchedule> charges = loanScheduleRepo.findAll(request.getLoanId());
-        if (charges == null || charges.isEmpty())
+        List<LoanSchedule> schedules = loanScheduleRepo.findAll(request.getLoanId());
+        if (schedules == null || schedules.isEmpty())
             return TxnResult.builder().code("404")
                     .message("No records found")
                     .build();
+        List<LoanSchedule> loanScheduleList = new ArrayList<>();
+        for (LoanSchedule item : schedules){
+            item.setTotalAmount(item.getPrincipalAmount() + item.getInterestAmount());
+            item.setAmountUnPaid(item.getInterestUnpaid() + item.getPrincipalUnpaid());
+            item.setAmountPaid(item.getInterestPaid() + item.getPrincipalPaid());
+            loanScheduleList.add(item);
+        }
         return TxnResult.builder().message("approved").
-                code("00").data(charges).build();
+                code("00").data(loanScheduleList).build();
     }
 
 

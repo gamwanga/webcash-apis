@@ -28,10 +28,20 @@ public interface UserRepo extends CrudRepository<SysUser, Integer> {
             @Param("sys_userid") Integer userId
     );
 
-    @Modifying
-    @Query(value = "update sys_user set password_changed_flag = 'Y' where sys_userid = :sys_userid", nativeQuery = true)
-    void updatePasswordChangeFlag(
-            @Param("sys_userid") Integer userId
+    @Query(value = "select u.* from sys_user u where u.email_address = :email_address", nativeQuery = true)
+    SysUser findUserByLoginEmailAddress(
+            @Param("email_address") String emailAddress
     );
+
+
+    @Modifying
+    @Query(value = "update {h-schema}sys_user set user_pwd = :user_pwd, password_changed_flag = :password_changed_flag where sys_userid = :sys_userid", nativeQuery = true)
+    void updatePasswordChangeFlag(
+            @Param("sys_userid") Integer userId,
+            @Param("user_pwd") String password,
+            @Param("password_changed_flag") String passwordChangedFlag
+    );
+
+
 
  }

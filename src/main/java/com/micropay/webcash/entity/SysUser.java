@@ -70,6 +70,9 @@ public class SysUser {
     @Column(name = "user_name", nullable = false)
     private String userName;
 
+    @Column(name = "user_pwd", updatable = false)
+    private String userPwd;
+
     @Column(name = "password_change_flag")
     private String passwordChangeFlag;
 

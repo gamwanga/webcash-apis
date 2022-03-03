@@ -121,12 +121,13 @@ public class LoanManagerService {
         return loanSchedulesList;
     }
 
+
     private List<LoanSchedule> computeReducingBalanceSchedule(CreditApp request, LoanAccount loanAccount, LoanRepaymentInfo loanRepaymentInfo) {
         List<LoanSchedule> loanSchedulesList = new ArrayList<>();
         int intCount;
         Double dblPrinciple;
         Double dblTempPrinciple = 0d;
-        Double dblTotal;
+        Double totalLoanAmount;
         int intTotMonths;
         Double dblInterest;
         Double dblInterestRate;
@@ -137,15 +138,14 @@ public class LoanManagerService {
         Double dblnPvRate = 0D;
         Date payDueDate = request.getStartDate();
 
-
         intTotMonths = request.getRepayTerm();
         strInterval = request.getRepayPeriod();
-        dblTotal = request.getApplAmt().doubleValue();
-        dblPrinciple = (dblTotal / intTotMonths);
+        totalLoanAmount = request.getApplAmt().doubleValue();
+        dblPrinciple = (totalLoanAmount / intTotMonths);
         if ((loanRepaymentInfo.getRepaymentType().equals("EQUAL_TOTAL_PAYMENT"))) // Using  equal total payments
         {
             dblInterestRate = (loanRepaymentInfo.getInterestRate() / 100);
-            dblTempPrinciple = dblTotal;
+            dblTempPrinciple = totalLoanAmount;
             switch (strInterval) {
                 case "DAY":
                     intpnPeriods = 365;
@@ -232,7 +232,7 @@ public class LoanManagerService {
         } else {
             for (intCount = 0; (intCount
                     <= (intTotMonths - 1)); intCount++) {
-                dblInterest = (dblTotal * ((loanRepaymentInfo.getInterestRate() / 100) / 12));
+                dblInterest = (totalLoanAmount * ((loanRepaymentInfo.getInterestRate() / 100)));
                 int serial = (intCount + 1);
                 dblTempPrinciple = (dblTempPrinciple - dblPrinciple);
                 dblTotalAmount = (dblPrinciple + dblInterest);
@@ -280,7 +280,7 @@ public class LoanManagerService {
                         payDueDate = cal.getTime();
                         break;
                 }
-                dblTotal = (dblTotal - dblPrinciple);
+                totalLoanAmount = (totalLoanAmount - dblPrinciple);
             }
         }
 
@@ -321,14 +321,17 @@ public class LoanManagerService {
 
         // Get the Loan Repayment Information
         LoanRepaymentInfo loanRepaymentInfo = new LoanRepaymentInfo();
-        loanRepaymentInfo.setRepaymentType("EQUAL_TOTAL_PAYMENT");
-        loanRepaymentInfo.setIntCalcOption("FLAT_AMOUNT");
-        loanRepaymentInfo.setInterestRate(18D);
-        List<LoanSchedule> loanScheduleList;
+        loanRepaymentInfo.setRepaymentType("REDUCING_BALANCE");
+        loanRepaymentInfo.setIntCalcOption("REDUCING_BALANCE");
+        loanRepaymentInfo.setInterestRate(8D);
+        List<LoanSchedule> loanScheduleList = null;
         if (loanRepaymentInfo.getIntCalcOption().equals("REDUCING_BALANCE"))
             loanScheduleList = computeReducingBalanceSchedule(request, loanAccount, loanRepaymentInfo);
-        else
+        else if (loanRepaymentInfo.getIntCalcOption().equals("FLAT_AMOUNT")) {
             loanScheduleList = computeFlatAmountSchedule(request, loanAccount, loanRepaymentInfo);
+        }
+
+
         if (loanScheduleList.isEmpty() || loanScheduleList == null)
             return TxnResult.builder().message("System failed to generate schedules").
                     code("-99").data(request).build();

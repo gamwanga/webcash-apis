@@ -53,6 +53,7 @@ public class AuthenticationEndpoint {
         }
     }
 
+
     @PostMapping("/changePassword")
     @ApiOperation(value = "", authorizations = {@Authorization(value = "apiKey")})
     @Operation(summary = "Manages user authentication in the system")
@@ -64,6 +65,20 @@ public class AuthenticationEndpoint {
             return CommonResponse.getUndefinedError();
         }
     }
+
+
+    @PostMapping("/resetUserPassword")
+    @ApiOperation(value = "", authorizations = {@Authorization(value = "apiKey")})
+    @Operation(summary = "Manages user authentication in the system")
+    public TxnResult resetUserPassword(@RequestBody PasswordChangeRequest request) {
+        try {
+            return service.resetUserPassword(request);
+        } catch (Exception e) {
+            logError(e);
+            return CommonResponse.getUndefinedError();
+        }
+    }
+
 
     @PostMapping("/logoutUser")
     @ApiOperation(value = "", authorizations = {@Authorization(value = "apiKey")})

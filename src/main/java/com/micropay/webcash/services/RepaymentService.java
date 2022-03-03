@@ -54,9 +54,19 @@ public class RepaymentService {
         // Get Loan account schedules
         Double paymentAmount = request.getAmount().doubleValue();
         Double totalPayment = 0D;
+        Double totalPrincipal = 0D;
+        Double totalRepayment = 0D;
         List<LoanSchedule> scheduleList = loanScheduleRepo.findPendingSchedules(loanAccount.getLoanId());
+
+        for(LoanSchedule schedule: scheduleList){
+            totalRepayment += schedule.getInterestUnpaid()+ schedule.getPrincipalUnpaid();
+        }
+        if (totalRepayment < paymentAmount) {
+            return TxnResult.builder().message("Specified Payment amount [" + String.format("%.2f", paymentAmount) +  "] is greater than the expected repayment amount [" + String.format("%.2f", totalRepayment) +  "].").code("99").data(request).build();
+        }
+
         for (LoanSchedule schedule : scheduleList) {
-            totalPayment = schedule.getInterestAmount() + schedule.getPrincipalAmount();
+            totalPayment = schedule.getInterestUnpaid() + schedule.getPrincipalUnpaid();
             if (totalPayment <= paymentAmount) {
                 schedule.setInterestPaid(schedule.getInterestAmount());
                 schedule.setInterestUnpaid(0d);
@@ -65,17 +75,27 @@ public class RepaymentService {
                 schedule.setStatus("PAID");
                 schedule.setPaymentDate(new Date());
                 loanScheduleRepo.save(schedule);
+                totalPrincipal += schedule.getPrincipalAmount();
                 paymentAmount = paymentAmount - totalPayment;
                 continue;
             }
-            schedule.setInterestPaid(schedule.getInterestAmount());
-            schedule.setInterestUnpaid(0d);
-            schedule.setStatus("PARTIALLY_PAID");
-            paymentAmount = paymentAmount - schedule.getInterestAmount();
-            if (paymentAmount > 0) {
-                schedule.setPrincipalPaid(paymentAmount);
-                schedule.setPrincipalUnpaid(schedule.getPrincipalAmount() - paymentAmount);
+
+            if (paymentAmount > schedule.getInterestUnpaid()) {
+                paymentAmount = paymentAmount - schedule.getInterestUnpaid();
+                schedule.setInterestPaid(schedule.getInterestUnpaid());
+                schedule.setInterestUnpaid(0d);
+            }else{
+                schedule.setInterestPaid(paymentAmount);
+                schedule.setInterestUnpaid(schedule.getInterestUnpaid() - paymentAmount);
+                paymentAmount = 0D;
             }
+
+            if (paymentAmount > 0) {
+                totalPrincipal += paymentAmount;
+                schedule.setPrincipalPaid(paymentAmount + schedule.getPrincipalPaid());
+                schedule.setPrincipalUnpaid(schedule.getPrincipalUnpaid() - paymentAmount);
+            }
+            schedule.setStatus("PARTIALLY_PAID");
             schedule.setPaymentDate(new Date());
             loanScheduleRepo.save(schedule);
             break;
@@ -83,9 +103,16 @@ public class RepaymentService {
 
         // Get the Next Schedule to be Serviced in Future
         LoanSchedule schedule = loanScheduleRepo.findMinimumUnPaidSchedule(loanAccount.getLoanId());
-        loanAccount.setNextPmtAmount(schedule.getInterestUnpaid() + schedule.getPrincipalUnpaid());
-        loanAccount.setLedgerBal(loanAccount.getLedgerBal() - request.getAmount());
-        loanAccount.setNextPmtDate(schedule.getDueDate());
+        if (schedule != null) {
+            loanAccount.setNextPmtAmount(schedule.getInterestUnpaid() + schedule.getPrincipalUnpaid());
+            loanAccount.setLedgerBal(loanAccount.getLedgerBal() - totalPrincipal);
+            loanAccount.setNextPmtDate(schedule.getDueDate());
+        }else{
+            loanAccount.setNextPmtAmount(0D);
+            loanAccount.setLedgerBal(0D);
+            loanAccount.setNextPmtDate(null);
+            loanAccount.setStatus("CLOSED");
+        }
         loanAccountRepo.save(loanAccount);
         return TxnResult.builder().message("approved").code("00").data(request).build();
     }

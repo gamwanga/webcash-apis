@@ -14,6 +14,6 @@ public interface LoanScheduleRepo extends CrudRepository<LoanSchedule, Integer> 
     @Query(value = "select * from loan_schedule u where loan_id = :loan_id and loan_schedule_id in (select min(loan_schedule_id) from loan_schedule ls where loan_id = :loan_id and status in ('NOT_PAID','PARTIALLY_PAID'))", nativeQuery = true)
     LoanSchedule findMinimumUnPaidSchedule(@Param("loan_id") Integer loanId);
 
-    @Query(value = "select * from loan_schedule u where u.loan_id = :loan_id order by u.schedule_no", nativeQuery = true)
+    @Query(value = "select * from loan_schedule u where u.loan_id = :loan_id and  status in ('NOT_PAID', 'PARTIALLY_PAID') order by u.schedule_no", nativeQuery = true)
     List<LoanSchedule> findPendingSchedules(@Param("loan_id") Integer loanId);
 }

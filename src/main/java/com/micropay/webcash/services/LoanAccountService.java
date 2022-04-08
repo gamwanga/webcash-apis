@@ -27,6 +27,8 @@ public class LoanAccountService {
         List<LoanAccount> loanAccountList;
         if(request.getStatus() != null)
             loanAccountList = loanAccountRepo.findLoansByStatus(request.getStatus());
+        else if(request.getCustId() != null)
+            loanAccountList = loanAccountRepo.findAll(request.getCustId());
         else
             loanAccountList = loanAccountRepo.findAll();
         if (loanAccountList == null || loanAccountList.isEmpty())

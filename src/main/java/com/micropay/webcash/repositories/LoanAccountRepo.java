@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface LoanAccountRepo extends CrudRepository<LoanAccount, Integer> {
-    @Query(value = "select * from loan_account u where u.cust_id = :cust_id", nativeQuery = true)
+    @Query(value = "select * from loan_account u where u.credit_appl_id in (select credit_app_id from public.mbl_credit_app where cust_id = :cust_id)", nativeQuery = true)
     List<LoanAccount> findAll(@Param("cust_id") Integer custId);
 
     @Query(value = "select * from loan_account u where u.status = :status", nativeQuery = true)
